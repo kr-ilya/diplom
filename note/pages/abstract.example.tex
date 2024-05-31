@@ -1,0 +1,42 @@
+
+{
+
+\vspace{0.8cm}
+\begin{center}
+	Реферат
+\end{center}
+
+\vspace{1em}
+
+\authorwithinitials\
+\topic
+:\
+\mbox{\tpga}\
+ВКР / ВятГУ, каф. ЭВМ; рук.
+\supervisor – Киров, \the\year. –
+Гр.ч. \numberofposters л. ф.А1;
+ПЗ
+\total{page} с.,
+\total{figure} рис.,
+1 табл.,
+\total{equation} форм.,
+1 источников,
+1 прил.
+
+\vspace{1.5em}
+
+\IfFileExists{pages/abstract/tags.tex}{
+	\input{pages/abstract/tags.tex}
+}{
+	\input{pages/abstract.example/tags.tex}
+}
+
+\vspace{1.5em}
+
+\IfFileExists{pages/abstract/content.tex}{
+	\input{pages/abstract/content.tex}
+} {
+	\input{pages/abstract.example/content.tex}
+}
+
+}
