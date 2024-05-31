@@ -1,16 +1,1 @@
-pages/content/
-pages/content.tex
-
-pages/abstract/
-pages/abstract.tex
-
-pages/title/
-pages/title.tex
-
-custom/
-custom.tex
-
-constants/
-constants.tex
-
-images/
+output/*
