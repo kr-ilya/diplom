@@ -1,11 +1,15 @@
 % Здесь указываются пользовательские стили, команды...
 % Также возможно преопределение стилей, команд
 
+% Стилизация кода
 
-% Просто новая команда, чтобы показать пример
-\newcommand{\examplecommand}{
-	\begin{center}
-		Выполнена команда тест
-	\end{center}
+\setmonofont{DejaVu Sans Mono}
+
+\lstset{basicstyle=\ttfamily\large,
+	breaklines=true,
+	keepspaces=true,
+	numbers=left,
+	frame=single,
+	xleftmargin=.25\textwidth,
+	xrightmargin=.25\textwidth
 }
-

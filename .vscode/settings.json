@@ -75,4 +75,12 @@
     }],
     "latex-workshop.latex.recipe.default": "latexmk (xelatex)",
     "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/note/output",
+    "cSpell.language": "en,ru",
+    "cSpell.words": [
+        "парсер",
+        "парсере",
+        "Пратт",
+        "Пратта",
+        "токеном"
+    ],
 }
