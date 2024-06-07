@@ -1,6 +1,6 @@
 \subsection{Разработка синтаксического анализатора}
 
-В данном разделе необходимо выполнить разработку алгоритмов функционирования синтаксического анализатора.
+% В данном разделе необходимо выполнить разработку алгоритмов функционирования синтаксического анализатора.
 
 Синтаксический анализ – процесс сопоставления последовательности токенов с формальной грамматикой языка.
 Результатом работы синтаксического анализатора является абстрактное синтаксическое дерево (AST),
@@ -89,16 +89,16 @@
 	\label{f:ast_example}
 \end{figure}
 
-Некоторые схемы алгоритма построения абстрактного синтаксического дерева представлены на рисунках~\ref{f:parse_program}~-~\ref{f:parse_PrefixExpression}.
+Некоторые схемы алгоритма построения абстрактного синтаксического дерева представлены на рисунках~\ref{f:parse_program}~-~\ref{f:parse_Expression}.
 
-В данном разделе была выполнена разработка структурных решений и алгоритмов функционирования синтаксического анализатора.
+% В данном разделе была выполнена разработка структурных решений и алгоритмов функционирования синтаксического анализатора.
 
 \clearpage
 
 \begin{figure}[!htp]
 	\centering
 	\includegraphics[width=0.5\textwidth]{structures/parser/parse_program.pdf}
-	\caption{Схема алгоритма «Parse Program»}
+	\caption{Схема алгоритма «ParseProgram»}
 	\label{f:parse_program}
 \end{figure}
 
@@ -107,47 +107,17 @@
 \begin{figure}[!htp]
 	\centering
 	\includegraphics[width=0.7\textwidth]{structures/parser/parse_statement.pdf}
-	\caption{Схема алгоритма «parse Statement»}
+	\caption{Схема алгоритма «parseStatement»}
 	\label{f:parse_statement}
 \end{figure}
 
 \clearpage
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.4\textwidth]{structures/parser/parse_assignStatement.pdf}
-	\caption{Схема алгоритма «parse AssignStatement»}
-	\label{f:parse_assignStatement}
-\end{figure}
-
 \begin{figure}[!htp]
 	\centering
-	\includegraphics[width=0.3\textwidth]{structures/parser/parse_expressionStatement.pdf}
-	\caption{Схема алгоритма «parse ExpressionStatement»}
-	\label{f:parse_expressionStatement}
-\end{figure}
-
-\begin{figure}[!htp]
-	\centering
-	\includegraphics[width=0.65\textwidth]{structures/parser/parse_Expression.pdf}
-	\caption{Схема алгоритма «parse Expression»}
+	\includegraphics[width=0.60\textwidth]{structures/parser/parse_Expression.pdf}
+	\caption{Схема алгоритма «parseExpression»}
 	\label{f:parse_Expression}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[!htp]
-	\centering
-	\includegraphics[width=0.3\textwidth]{structures/parser/parse_returnStatement.pdf}
-	\caption{Схема алгоритма «parse ReturnStatement»}
-	\label{f:parse_returnStatement}
-\end{figure}
-
-\begin{figure}[!htp]
-	\centering
-	\includegraphics[width=0.3\textwidth]{structures/parser/parse_PrefixExpression.pdf}
-	\caption{Схема алгоритма «parse PrefixExpression»}
-	\label{f:parse_PrefixExpression}
 \end{figure}
 
 \clearpage

@@ -1,7 +1,7 @@
 \subsection{Разработка грамматики языка}
 
 Описание языка программирования основывается на теории формальных языков.
-В данном разделе проводится разработка формальной грамматики языка.
+В данном разделе проводится разработка формальной грамматики языка и её описание.
 
 
 \subsubsection{Способы задания языков}
@@ -82,21 +82,16 @@
 
 В соответствии с данными правилами описание синтаксиса предметно-ориентированного языка будет выглядеть следующим образом:
 
+(* Точка входа *)
+
 Program = Statement+ \\
+
+
+(* Основные конструкции *)
 
 Statement = AssignStmt | FunctionDecl | ExpressionStmt | ReturnStmt | BlockStmt | IfStmt .
 
-ExpressionStmt = Expression .
-
-Identifier = (letter | "{}\_"{}) { letter | "{}\_"{} | digit } . \\
-
-Expression = UnaryExpr | Expression binary\_op Expression . 
-
-UnaryExpr = PrimaryExpr | unary\_op UnaryExpr . \\
-
-PrimaryExpr = Operand | PrimaryExpr Index | CallExpr .
-
-Index = "{}["{} Expression "{}]"{} . \\
+ExpressionStmt = Expression . \\
 
 AssignStmt = Identifier assign\_op Expression .
 
@@ -104,27 +99,50 @@ ReturnStmt = "{}return"{} [Expression] .
 
 BlockStmt = "{}\{"{} StatementList "{}\}" .
 
-StatementList = \{ Statement "{};"{} \} . \\
+StatementList = \{ Statement "{};"{} \} .
 
 IfStmt = "{}if("{} [Expression] "{})"{} BlockStmt ["{}else"{} BlockStmt] . \\
+
+
+(* Выражения *)
+
+Expression = UnaryExpr | Expression binary\_op Expression . 
+
+UnaryExpr = PrimaryExpr | unary\_op UnaryExpr . \\
+
+PrimaryExpr = Operand | PrimaryExpr Index | CallExpr .
+
+Index = "{}["{} Expression "{}]"{} .
+
+ExpressionList = Expression \{ "{},"{} Expression \} . \\
+
+
+(* Определение структуры функции *)
 
 FunctionDecl = "{}fn("{} [ParameterList] "{})"{} BlockStmt .
 
 ParameterList = Identifier \{ "{},"{} Identifier \} .
 
-Arguments = "{}("{} [ ExpressionList ] "{})"{} . \\
+Arguments = "{}("{} [ ExpressionList ] "{})"{} .
 
-CallExpr = Identifier Arguments .
+CallExpr = Identifier Arguments . \\
 
-ExpressionList = Expression \{ "{},"{} Expression \} . \\
+
+(* Массив *)
 
 Array = "{}["{} [ ExpressionList ] "{}]"{} . \\
+
+
+(* Хэш-карта *)
 
 Key = stringLiteral | intLiteral | Identifier | Expression .
 
 KeyedElement  = [ Key "{}:"{} Expression ] .
 
 Map = "{}\{"{} KeyedElement \{ "{},"{} KeyedElement \} "{}\}"{} . \\
+
+
+Identifier = (letter | "{}\_"{}) { letter | "{}\_"{} | digit } .
 
 Operand = Literal | "{}("{} Expression "{})"{} .
 
@@ -134,6 +152,9 @@ intLiteral = digit \{ digit \} .
 
 stringLiteral = << "{} >> \{ ascii\_char \} << "{} >> . \\
 
+
+(* Операторы *)
+
 binary\_op = "{}||"{} | "{}\&\&"{} | rel\_op | add\_op | mul\_op .
 
 rel\_op = "{}=="{} | "{}!="{} | \"{}<\"{} | "{}<="{} | "{}>"{} | "{}>="{} .
@@ -142,16 +163,19 @@ add\_op = "{}+"{} | "{}-"{} .
 
 mul\_op = "{}*"{} | "{}/"{} | "{}\%"{} .
 
-assign\_op = "{}="{} . \\
+assign\_op = "{}="{} .
 
 unary\_op = "{}-"{} | "{}!"{} . \\
+
+
+(* Примитивы (цифры, буквы) *)
 
 digit = "{}0"{} ... "{}9"{} .
 
 letter = "{}A"{} ... "{}Z"{} | "{}a"{} ... "{}z"{} .
 
-ascii\_char = (* ascii character *) . \\
+ascii\_char = ascii character . \\
 
 Начальное состояние, с которого начинается разбор -- Program.
 
-В данном разделе была разработана и описана с помощью расширенной формы Бэкуса-Наура формальная грамматика предметно-ориентированного языка.
+% В данном разделе была разработана и описана с помощью расширенной формы Бэкуса-Наура формальная грамматика предметно-ориентированного языка.

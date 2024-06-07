@@ -1,6 +1,6 @@
 \subsection{Разработка семантического анализатора}
 
-В данном разделе необходимо выполнить разработку алгоритмов функционирования семантического анализатора.
+% В данном разделе необходимо выполнить разработку алгоритмов функционирования семантического анализатора.
 
 Семантический анализ – это этап работы транслятора, вот время которого выполняется проверка текста исходной программы с точки зрения семантики языка.
 В ходе семантического анализа выполняется такие операции, как проверка типов данных, правильность использования переменных, функций, выражений, а также обнаружение смысловых ошибок в коде.
@@ -57,6 +57,8 @@ X + 3
 Объектная система может быть представлена в виде диаграммы классов.
 Диаграмма классов представлена на рисунке~\ref{f:class_diagram}.
 
+\clearpage
+
 \begin{figure}[!htp]
 	\centering
     \vspace{\toppaddingoffigure}
@@ -65,9 +67,18 @@ X + 3
 	\label{f:class_diagram}
 \end{figure}
 
-В качестве примера работы алгоритма на рисунках~\ref{f:semantic_infix_expr}~-~\ref{f:semantic_index_expr} приведены схемы алгоритмов семантического анализа некоторых выражений.
+В качестве примера работы алгоритма на рисунках~\ref{f:evalProgram}~-~\ref{f:semantic_index_expr} приведены схемы алгоритмов семантического анализа некоторых выражений.
 
-В данном разделе была выполнена разработка структурных решений и алгоритмов функционирования семантического анализатора.
+% В данном разделе была выполнена разработка структурных решений и алгоритмов функционирования семантического анализатора.
+
+\begin{figure}[!htp]
+	\centering
+	\includegraphics[width=0.4\textwidth]{structures/semantic_analyzer/semantic_Program.pdf}
+	\caption{Схема алгоритма «evalProgram»}
+	\label{f:evalProgram}
+\end{figure}
+
+\clearpage
 
 \begin{figure}[!htp]
 	\centering
@@ -89,7 +100,7 @@ X + 3
 
 \begin{figure}[!htp]
 	\centering
-	\includegraphics[width=0.75\textwidth]{structures/semantic_analyzer/semantic_if_expr.pdf}
+	\includegraphics[width=0.7\textwidth]{structures/semantic_analyzer/semantic_if_expr.pdf}
 	\caption{Схема алгоритма «evalIfExpression»}
 	\label{f:semantic_if_expr}
 \end{figure}
