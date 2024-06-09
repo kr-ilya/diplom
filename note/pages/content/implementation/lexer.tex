@@ -1,0 +1,142 @@
+\subsubsection{Реализация лексического анализатора}
+
+Лексический анализатор состоит из следующих основных компонентов:
+\begin{itemize}
+    \item токены -- определение структуры и типов токенов, представляющих основные элементы языка;
+    \item конечный автомат -- принимает на вход поток символов и определяет токены переходя между состояниями в соответствии с правилами языка.
+\end{itemize}
+
+Токен представляет собой структуру, содержащую информацию о типе токена и его значение, представленное в виде строки.
+Код структуры, представляющей токен приведен на рисунке~\ref{f:code_tokenStruct}.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go
+    ]
+type TokenType = string
+type Token struct {
+    Type    TokenType
+    Literal string
+}        
+\end{lstlisting}
+	\caption{Структура, представляющая токен}
+	\label{f:code_tokenStruct}
+\end{figure}
+
+Список возможных токенов представлен в таблице~\ref{t:tokens}.
+
+Программную реализацию токенов можно выполнить с помощью списка константных значений.
+Фрагмент кода реализации токенов представлен на рисунке~\ref{f:code_tokensFragemnt}.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}
+IDENT  = "IDENT"  // x, t, add
+INT    = "INT"    // 123
+STRING = "STRING" // "abcde"
+ASSIGN = "="
+PLUS   = "+"
+STAR   = "*"
+
+// keywords
+IF     = "IF"
+ELSE   = "ELSE"
+TRUE   = "TRUE"    
+\end{lstlisting}
+	\caption{Фрагмент кода реализации токенов}
+	\label{f:code_tokensFragemnt}
+\end{figure}
+
+Лексер представляет собой структуру, содержащую информацию о входной строке кода,
+текущем считанном символе, позиции курсора и других технических значениях, необходимых для корректной работы анализатора.
+Структура представляющая лексер приведена на рисунке~\ref{f:code_lexerStruct}.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+type Lexer struct {
+    input   string
+    ch      byte // current char
+    pos     int  // current position (on current char)
+    readPos int  // position after current char
+    nlsemi  bool // if "true" '\n' translate to ';'
+    loPos   token.Pos
+}    
+\end{lstlisting}
+	\caption{Структура, представляющая токен}
+	\label{f:code_lexerStruct}
+\end{figure}
+
+Основная функция лексического анализатора может быть реализована в формате конечного автомата.
+При получении очередного символа из входной строки кода его необходимо сопоставить с одним из токенов.
+Стоит заметить, что некоторые токены формируются за счет двух и более символом, например токен <<LAND>> (\&\&), идентификаторы, ключевые слова и т.д. 
+В этом случае, необходимо продолжать получение символов из входной строки до тех пор, пока не будет однозначно определен токен.
+
+Основная функция определения токена выполнена в виде конструкции switch-case.
+Фрагмент кода представлен на рисунке~\ref{f:code_lexerFragment}.
+
+% Полный код лексера представлен в приложении ...
+
+\clearpage
+
+\begin{figure}[!ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+    \begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+func (l *Lexer) NextToken() (token.Token, token.Pos) {
+    l.skipWhitespace()
+    nlsemi := false
+    var tok token.Token
+    switch l.ch {
+    case '\n':
+        tok = newToken(token.SEMICOLON, l.ch)
+    case '=':
+        if l.peekChar() == '=' {
+            l.readChar()
+            literal := "=="
+            tok = token.Token{Type: token.EQ, Literal: literal}
+        } else {
+            tok = newToken(token.ASSIGN, l.ch)
+        }
+    case '+':
+        tok = newToken(token.PLUS, l.ch)
+    case '-':
+        tok = newToken(token.MINUS, l.ch)
+    case '*':
+        tok = newToken(token.STAR, l.ch)
+    case '/':
+        tok = newToken(token.SLASH, l.ch)
+    case '!':
+        if l.peekChar() == '=' {
+            l.readChar()
+            literal := "!="
+            tok = token.Token{Type: token.NEQ, Literal: literal}
+        } else {
+            tok = newToken(token.EXCLAMINATION, l.ch)
+        }
+    case '%':
+		tok = newToken(token.PERCENT, l.ch)
+	case '<':
+		if l.peekChar() == '=' {
+			l.readChar()
+			literal := "<="
+			tok = token.Token{Type: token.LEQ, Literal: literal}
+		} else {
+			tok = newToken(token.LT, l.ch)
+		}
+\end{lstlisting}
+	\caption{Фрагмент кода лексера}
+	\label{f:code_lexerFragment}
+\end{figure}

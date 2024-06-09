@@ -1,0 +1,106 @@
+\subsubsection{Реализация семантического анализатора}
+
+Прежде, чем переходить непосредственно к реализации семантического анализатора, необходимо реализовать объектную систему.
+Объектная система является основополагающей частью семантического анализатора и исполнителя.
+Семантической анализатор в процессе своей работы выполняет необходимые проверки на основе значений,
+представленных в виде объектов внутреннего представления.
+
+Каждое значение выражения представляется в виде структуры, которая соответствует некоторому объекту интерфейсного типа -- рисунок~\ref{f:code_ObjectInterface}.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go
+    ]
+type ObjectType string
+
+type Object interface {
+    Type() ObjectType
+    ToString() string
+}
+\end{lstlisting}
+	\caption{Интерфейс объекта}
+	\label{f:code_ObjectInterface}
+\end{figure}
+
+На рисунке~\ref{f:code_IObjectExample} приведен пример структуры, которая представляет данные типа «целое число».
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
+func (i *Integer) ToString() string {
+    return fmt.Sprintf("%d", i.Value)
+}
+func (i *Integer) HashKey() HashKey {
+    return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+\end{lstlisting}
+	\caption{Пример реализации интерфейса Object}
+	\label{f:code_IObjectExample}
+\end{figure}
+
+Поле «Value» предназначено для хранения значения числа.
+Метод «Type()» возвращает информацию о принадлежности структуры типу «integer». 
+Метод «ToString()» формирует хранимое значение в виде строки.
+Используется для читаемого представления значения объекта в процессе отладки. 
+
+Подобные структуры, реализующие интерфейс «Object» представлены для всех примитивных и составных типов данных, используемых в языке:
+boolean, string, integer, array, HashMap.
+Кроме этого, реализованы еще несколько вспомогательных структур:
+
+\begin{itemize}
+    \item «Null» для поддержки соответствующих значений;
+    \item «Error», содержащая информацию об ошибке, возникшей на этапе семантического анализа;
+    \item «Return» для представления возвращаемых значений;
+    \item «Function» - специальная структура, используемая при обработке вызова функции;
+    \item «Builtin» - структура, представляющая встроенные функции.
+\end{itemize}
+
+Данные объекты формируют объектную систему внутреннего представления значений программы.
+
+Семантический анализ выполняется во время рекурсивного прохода по узлам AST.
+В ходе рекурсии при достижении примитивных значений в крайних узлах ветвей AST для каждого значения создается объект  внутреннего представления соответствующего типа.
+На обратном ходу рекурсии, при необходимости выполнить проверку семантической корректности выражения она выполняется над объектами внутреннего представления, сформированными ранее.
+При анализе генерируется ошибка, в случае её обнаружения, в противном случае начинается вычисление значение выражения исполнителем.
+
+Фрагмент кода функции разбора инфиксного выражения представлен на рисунке~\ref{f:code_semantic}.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.03\textwidth
+    ]
+func evalInfixExpression(op string, left object.Object, right object.Object) object.Object {
+    switch {
+    case left.Type() != right.Type():
+        return newError("type mismatch: %s %s %s", left.Type(), op, right.Type())
+    case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+        return evalIntInfixExpr(op, left, right)
+    case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+        return evalStringInfixExpr(op, left, right)
+    case op == "==":
+        return boolToBooleanObj(left == right)
+    case op == "!=":
+        return boolToBooleanObj(left != right)
+    case op == "||":
+        return boolToBooleanObj(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
+    case op == "&&":
+        return boolToBooleanObj(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
+    default:
+        return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+    }
+}
+\end{lstlisting}
+	\caption{Пример семантического анализа инфиксного выражения}
+	\label{f:code_semantic}
+\end{figure}
