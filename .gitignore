@@ -8,3 +8,7 @@
 *.xdv
 *.out
 todo.txt
+
+*.pdf
+!note/images/**/*.pdf
+!note/images.example/**/*.pdf
