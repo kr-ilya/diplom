@@ -1,0 +1,312 @@
+\subsubsection{Реализация исполнителя}
+
+В общем виде процесс исполнения тесно связан с этапом семантического анализа.
+Выполняется рекурсивный обход абстрактного синтаксического дерева.
+Первым шагом каждое выражение проходит семантическую проверку.
+После успешного завершения семантического анализа выражения из AST передаются на этап их вычисления.
+Разнотипные выражения обрабатываются по-разному, однако результат вычисления всегда представляет собой некоторый тип данных, представленный в виде объекта -- внутреннего представления.
+
+Окружение для хранения информации о переменных в программном коде реализовано в виде структуры,
+содержащей поля с хэш-картой с самими переменными и их значениями, а также ссылка на эту же структуру для организации области видимости при вызове функций.
+На рисунке~\ref{f:code_envStruct} приведен пример программной реализации данной структуры.
+
+\begin{figure}[ht]
+	\centering
+	\vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go
+    ]
+type Env struct {
+    store map[string]Object
+    outer *Env
+}
+\end{lstlisting}
+	\caption{Реализация окружения}
+	\label{f:code_envStruct}
+\end{figure}
+
+За обработку узлов AST отвечает единственная функция, которая определяет тип узла и передает управление соответствующей функции,
+которая после прохождения семантической проверки вычисляет значение для узла данного типа.
+В конечном итоге формируется внутреннее представление в виде объектов с примитивными типами данных, либо объекты представляющие составные типы, состоящие из примитивных, так как массивы и хеш-карты.
+Фрагмент кода основной функции получения и обработки узлов AST приведен на рисунке~\ref{f:code_evalFragment}.
+
+При обнаружении в коде определения переменной, ее необходимо сохранить в памяти, чтобы в дальнейшем иметь к ней доступ.
+Для этого используется окружение.
+Переменные в окружении хранятся в виде хэш-карты, ключи которой представляют идентификатор переменной, а значения – внутреннее представление значений переменной, то есть объекты.
+
+Код функций записи переменной в окружение и получения из него приведен на рисунке~\ref{f:code_getsetEnv}.
+
+\clearpage
+
+\begin{figure}[!htb]
+	\centering
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+func Eval(n ast.Node, env *object.Env) object.Object {
+    switch node := n.(type) {
+    case *ast.Program:
+        return evalProgram(node, env)
+    case *ast.BlockStatement:
+        return evalBlockStatement(node, env)
+    case *ast.ExpressionStatement:
+        return Eval(node.Expression, env)
+    case *ast.ReturnStatement:
+        val := Eval(node.Value, env)
+        if isError(val) {
+            return val
+        }
+
+        return &object.Return{Value: val}
+    case *ast.AssignStatement:
+        val := Eval(node.Value, env)
+        if isError(val) {
+            return val
+        }
+
+        env.Set(node.Name.Value, val)
+    case *ast.IntegerLiteral:
+        return &object.Integer{Value: node.Value}
+    case *ast.Boolean:
+        if node.Value {
+            return TRUE
+        }
+        return FALSE
+\end{lstlisting}
+	\caption{Фрагмент кода исполнителя}
+	\label{f:code_evalFragment}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+func (e *Env) Get(key string) (Object, bool) {
+    obj, ok := e.store[key]
+    if !ok && e.outer != nil {
+        obj, ok = e.outer.Get(key)
+    }
+    return obj, ok
+}
+func (e *Env) Set(key string, val Object) Object {
+    e.store[key] = val
+    return val
+}    
+\end{lstlisting}
+	\caption{Код функций записи и получения значений окружения}
+	\label{f:code_getsetEnv}
+\end{figure}
+
+\clearpage
+
+
+Использование единого хранилища значений переменных для всей области видимости программы вносит некоторые ограничения.
+Например в аргументах функции могут быть определены параметры, имена которых совпадают с объявленным ранее переменным.
+Это некорректное поведение, так как первое объявленное значение будет перезаписано другим, переданным в функцию.
+Пример кода такой ситуации приведен на рисунке~\ref{f:code_rewriteVarError}.
+
+\begin{figure}[!htb]
+	\centering
+    \vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+x = 10;
+f = func(x) {
+    return x * 10;
+}
+f(5);
+x; //5
+\end{lstlisting}
+	\caption{Пример кода некорректного поведения}
+	\label{f:code_rewriteVarError}
+\end{figure}
+
+В данном коде, имя параметра функции совпадает с именем переменной -- x.
+Переменная <<x>> объявлена со значением, равным 10.
+Данное значение перезапишется значением, переданным в функцию при ее вызове, в данном случае значением, равным 5.
+Таким образом, после вызова функции значение переменной <<x>> будет неявно изменено и станет равным 5.
+Данная логика работы является ошибочной.
+
+Решение лежит в выделении внутреннего окружения функции при её вызове.
+Именно для такого случая в ранее рассмотренной структуре Env содержится ссылка на другой экземпляр структуры такого же типа.
+Так, при вызове функции, необходимо создать новый экземпляр окружения, записать в него переданные аргументы и установить ссылку на внешнее окружение,
+то из которого была вызвана функция. Такой подход позволит корректно выполнять вложенные функции и рекурсивные вызовы.
+
+Для строк и массивов реализованы несколько встроенных функций:
+
+\begin{itemize}
+    \item len -- определение длины строки или массива;
+    \item push -- добавление элемента в конец массива;
+    \item first -- получение первого элемента массива;
+    \item last -- получение последнего элемента массива.
+\end{itemize}
+% Код реализации встроенных функций приведен в приложении Г.
+
+Хэш-карты реализованы на базе хэш-карт языка Go.
+В качестве ключа могут быть следующие типы данных: строка, булево значение, число.
+Так как данные типы представлены в виде внутренних объектов, нельзя брать тип Object в качестве ключа.
+При занесении значения в хэш-карту и попытке последующего его получения ключи будут представлять разные экземпляры несмотря на одинаковое значение.
+На рисунке~\ref{f:code_hashmapGetValueExample} приведен наглядный пример.
+
+\begin{figure}[!htb]
+	\centering
+    \vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go
+    ]
+X = { "name": "Bob" }
+X["name"]     
+\end{lstlisting}
+	\caption{Пример получения значения хэш-карты}
+	\label{f:code_hashmapGetValueExample}
+\end{figure}
+
+Строковой ключ «name» при попытке получить значение из карты не будет возвращать значение "Bob",
+так как при вычислении выражения будет создан новый экземпляр объекта, представляющего строку.
+Для решения этой проблемы можно использовать в качестве ключа строку, содержащую хэш от значения объекта.
+
+Фрагмент кода объектной системы с реализацией хэш-карт представлен на рисунке~\ref{f:code_hashmapObject}.
+
+Фрагмент кода функции вычисления целочисленного инфиксного выражения приведен на рисунке~\ref{f:code_evalIntInfixExpr}.
+
+\clearpage
+
+\begin{figure}[!htb]
+	\centering
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+type HashKey struct {
+    Type  ObjectType
+    Value uint64
+}
+
+type Hashable interface {
+    HashKey() HashKey
+}
+
+type HashPair struct {
+    Key   Object
+    Value Object
+}
+
+type HashMap struct {
+    Pairs map[HashKey]HashPair
+}
+
+func (h *HashMap) Type() ObjectType { return HASH_MAP_OBJ }
+func (h *HashMap) ToString() string {
+    var out bytes.Buffer
+
+    pairs := []string{}
+    for _, el := range h.Pairs {
+        pairs = append(pairs, fmt.Sprintf("%s: %s", el.Key.ToString(), el.Value.ToString()))
+    }
+
+    out.WriteString("[")
+    out.WriteString(strings.Join(pairs, ", "))
+    out.WriteString("]")
+
+    return out.String()
+} 
+\end{lstlisting}
+	\caption{Фрагмент кода реализации хэш-карт}
+	\label{f:code_hashmapObject}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[!htb]
+	\centering
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+func evalIntInfixExpr(op string, left object.Object, right object.Object) object.Object {
+    lVal := left.(*object.Integer).Value
+    rVal := right.(*object.Integer).Value
+    switch op {
+    case "+":
+        return &object.Integer{Value: lVal + rVal}
+    case "-":
+        return &object.Integer{Value: lVal - rVal}
+    case "*":
+        return &object.Integer{Value: lVal * rVal}
+    case "/":
+        return &object.Integer{Value: lVal / rVal}
+    case "%":
+        return &object.Integer{Value: lVal % rVal}
+    case "==":
+        return boolToBooleanObj(lVal == rVal)
+    case "!=":
+        return boolToBooleanObj(lVal != rVal)
+    case "<":
+        return boolToBooleanObj(lVal < rVal)
+    case ">":
+        return boolToBooleanObj(lVal > rVal)
+    case "<=":
+        return boolToBooleanObj(lVal <= rVal)
+    case ">=":
+        return boolToBooleanObj(lVal >= rVal)
+    default:
+        return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+    }
+}
+\end{lstlisting}
+	\caption{Фрагмент кода функции вычисления целочисленного инфиксного выражения}
+	\label{f:code_evalIntInfixExpr}
+\end{figure}
+
+% Фрагменты кода исполнителя приведены в приложении В.
+
+Пример успешного выполнения программы для указанных входных данных представлен на рисунке~\ref{f:evalSuccessExample}.
+
+Входная строка: $5 + 1 * 20 / (5 + 5)$.
+
+\clearpage
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.4\textwidth]{evaluator/evalSuccessExample.png}
+	\caption{Пример успешного выполнения программы}
+	\label{f:evalSuccessExample}
+\end{figure}
+
+Пример завершения работы программы с семантической ошибкой для указанных ниже входных данных показан на рисунке~\ref{f:evalErrorExample}.
+
+Входная строка представлена на рисунке~\ref{f:code_evalErrorExample}.
+
+\begin{figure}[!htb]
+	\centering
+    \vspace{\toppaddingoffigure}
+	\begin{lstlisting}[
+        language=Go,
+        xleftmargin=.08\textwidth,
+        xrightmargin=.08\textwidth
+    ]
+x = 5 + 1 * 20 / (5 + 5)
+if (x > true) {
+    return 1
+}    
+\end{lstlisting}
+	\caption{Пример кода, содержащего ошибку}
+	\label{f:code_evalErrorExample}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.8\textwidth]{evaluator/evalErrorExample.png}
+	\caption{Пример завершения работы программы с ошибкой}
+	\label{f:evalErrorExample}
+\end{figure}
