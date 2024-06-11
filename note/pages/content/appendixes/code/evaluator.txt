@@ -1,0 +1,266 @@
+// Фрагменты листинга кода исполнителя
+
+package evaluator
+
+import (
+	"fmt"
+
+	"github.com/botscubes/bql/internal/ast"
+	"github.com/botscubes/bql/internal/object"
+)
+
+var (
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+	NULL  = &object.Null{}
+)
+
+func boolToBooleanObj(b bool) *object.Boolean {
+	if b {
+		return TRUE
+	}
+
+	return FALSE
+}
+
+func Eval(n ast.Node, env *object.Env) object.Object {
+	switch node := n.(type) {
+	case *ast.Program:
+		return evalProgram(node, env)
+
+	case *ast.BlockStatement:
+		return evalBlockStatement(node, env)
+
+	case *ast.ExpressionStatement:
+		return Eval(node.Expression, env)
+
+	case *ast.ReturnStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+
+		return &object.Return{Value: val}
+
+	case *ast.AssignStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+
+		env.Set(node.Name.Value, val)
+
+	case *ast.IntegerLiteral:
+		return &object.Integer{Value: node.Value}
+
+	case *ast.Boolean:
+		if node.Value {
+			return TRUE
+		}
+
+		return FALSE
+
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
+
+	case *ast.PrefixExpression:
+		right := Eval(node.Right, env)
+		if isError(right) {
+			return right
+		}
+
+		return evalPrefixExpression(node.Operator, right)
+
+	case *ast.InfixExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+
+		right := Eval(node.Right, env)
+		if isError(right) {
+			return right
+		}
+
+		return evalInfixExpression(node.Operator, left, right)
+
+	case *ast.IfExpression:
+		return evalIfExpression(node, env)
+
+	case *ast.Ident:
+		return evalIdent(node, env)
+
+	case *ast.FunctionLiteral:
+		return &object.Function{Parameters: node.Parameters, Body: node.Body, Env: env}
+
+	case *ast.CallExpression:
+		function := Eval(node.FnName, env)
+		if isError(function) {
+			return function
+		}
+
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+
+		return callFunction(function, args)
+
+	case *ast.ArrayLiteral:
+		elements := evalExpressions(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+
+		return &object.Array{Elements: elements}
+
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+
+		return evalIndexExpression(left, index)
+	case *ast.HashMapLiteral:
+		return evalHashMap(node, env)
+	}
+
+	return nil
+}
+
+func evalProgram(program *ast.Program, env *object.Env) object.Object {
+	var result object.Object
+
+	for _, stmt := range program.Statements {
+		result = Eval(stmt, env)
+
+		switch r := result.(type) {
+		case *object.Return:
+			return r.Value
+		case *object.Error:
+			return r
+		}
+	}
+
+	return result
+}
+
+func evalIntInfixExpr(op string, left object.Object, right object.Object) object.Object {
+	lVal := left.(*object.Integer).Value
+	rVal := right.(*object.Integer).Value
+	switch op {
+	case "+":
+		return &object.Integer{Value: lVal + rVal}
+	case "-":
+		return &object.Integer{Value: lVal - rVal}
+	case "*":
+		return &object.Integer{Value: lVal * rVal}
+	case "/":
+		return &object.Integer{Value: lVal / rVal}
+	case "%":
+		return &object.Integer{Value: lVal % rVal}
+	case "==":
+		return boolToBooleanObj(lVal == rVal)
+	case "!=":
+		return boolToBooleanObj(lVal != rVal)
+	case "<":
+		return boolToBooleanObj(lVal < rVal)
+	case ">":
+		return boolToBooleanObj(lVal > rVal)
+	case "<=":
+		return boolToBooleanObj(lVal <= rVal)
+	case ">=":
+		return boolToBooleanObj(lVal >= rVal)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+	}
+}
+
+func evalIdent(node *ast.Ident, env *object.Env) object.Object {
+	if val, ok := env.Get(node.Value); ok {
+		return val
+	}
+
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+
+	return newError("identifier not found: " + node.Value)
+}
+
+func callFunction(function object.Object, args []object.Object) object.Object {
+	switch fn := function.(type) {
+	case *object.Function:
+		extEnv := extendFuncEnv(fn, args)
+		ev := Eval(fn.Body, extEnv)
+		return unwrapReturn(ev)
+	case *object.Builtin:
+		return fn.Fn(args...)
+	default:
+		return newError("call not a function: %s", fn.Type())
+	}
+}
+
+func extendFuncEnv(fn *object.Function, args []object.Object) *object.Env {
+	env := object.NewEnclosedEnv(fn.Env)
+
+	for id, param := range fn.Parameters {
+		env.Set(param.Value, args[id])
+	}
+
+	return env
+}
+
+func unwrapReturn(obj object.Object) object.Object {
+	if val, ok := obj.(*object.Return); ok {
+		return val.Value
+	}
+
+	return obj
+}
+
+func evalHashMap(node *ast.HashMapLiteral, env *object.Env) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for knode, vnode := range node.Pairs {
+		key := Eval(knode, env)
+		if isError(key) {
+			return key
+		}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError("unusable as hash key: %s", key.Type())
+		}
+
+		value := Eval(vnode, env)
+		if isError(value) {
+			return value
+		}
+
+		pairs[hashKey.HashKey()] = object.HashPair{Key: key, Value: value}
+	}
+
+	return &object.HashMap{Pairs: pairs}
+}
+
+func evalHashMapIndexExp(hashMap, index object.Object) object.Object {
+	hashObject := hashMap.(*object.HashMap)
+
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newError("unusable as hash key: %s", index.Type())
+	}
+
+	pair, ok := hashObject.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+
+	return pair.Value
+}

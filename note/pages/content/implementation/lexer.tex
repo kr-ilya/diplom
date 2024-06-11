@@ -32,7 +32,6 @@ type Token struct {
 
 \begin{figure}[ht]
 	\centering
-	\vspace{\toppaddingoffigure}
 	\begin{lstlisting}
 IDENT  = "IDENT"  // x, t, add
 INT    = "INT"    // 123
@@ -40,6 +39,10 @@ STRING = "STRING" // "abcde"
 ASSIGN = "="
 PLUS   = "+"
 STAR   = "*"
+LT  = "<"
+GT  = ">"
+LAND = "&&"
+LOR  = "||"
 
 // keywords
 IF     = "IF"
@@ -71,7 +74,7 @@ type Lexer struct {
     loPos   token.Pos
 }    
 \end{lstlisting}
-	\caption{Структура, представляющая токен}
+	\caption{Структура, представляющая лексер}
 	\label{f:code_lexerStruct}
 \end{figure}
 
@@ -83,13 +86,10 @@ type Lexer struct {
 Основная функция определения токена выполнена в виде конструкции switch-case.
 Фрагмент кода представлен на рисунке~\ref{f:code_lexerFragment}.
 
-% Полный код лексера представлен в приложении ...
-
 \clearpage
 
 \begin{figure}[!ht]
 	\centering
-	\vspace{\toppaddingoffigure}
     \begin{lstlisting}[
         language=Go,
         xleftmargin=.08\textwidth,

@@ -1,0 +1,301 @@
+// Фрагменты листинга кода тестов
+func TestEvalIntegerExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"4", 4},
+		{"12", 12},
+		{"-5", -5},
+		{"-15", -15},
+		{"2 + 2", 4},
+		{"4 - 2", 2},
+		{"2 - 2", 0},
+		{"1 + 2 + 3 + 4 + 5 - 1 - 2 - 3", 9},
+		{"2 * 3 * 4 * 5 * 6 * 7 * 8 * 9", 362880},
+		{"10 + 10 * 2", 30},
+		{"(10 + 10) * 2", 40},
+		{"100 / 2 * 2 + 5", 105},
+		{"100 / (2 * 2) - 200", -175},
+		{"5 % 2", 1},
+		{"4 % 2", 0},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testInteger(t, ev, test.expected)
+	}
+}
+
+func TestEvalBooleanExpresion(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"true", true},
+		{"false", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 <= 2", true},
+		{"1 <= 1", true},
+		{"1 >= 2", false},
+		{"1 >= 1", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"(true == false) == false", true},
+		{"(1 == 1) == true", true},
+		{"(2 > 1) == true", true},
+		{"(2 < 1) == false", true},
+		{"(1 <= 1) == false", false},
+		{"true || false", true},
+		{"true && false", false},
+		{"true && true", true},
+		{"false && false", false},
+		{"false || false", false},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testBoolean(t, ev, test.expected, test.input)
+	}
+}
+
+func TestExclaminationOperator(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"!true", false},
+		{"!false", true},
+		{"!!false", false},
+		{"!!true", true},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testBoolean(t, ev, test.expected, test.input)
+	}
+}
+
+func TestIfElseExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{"if (true) { 50 }", 50},
+		{"if (false) { 50 }", nil},
+		{"if (!false) { 50 }", 50},
+		{"if (1 == 1) { 50 }", 50},
+		{"if (1 > 2) { 50 }", nil},
+		{"if (1 < 2) { 50 }", 50},
+		{"if (1 < 2) { 50 } else { 100 }", 50},
+		{"if (1 > 2) { 50 } else { 100 }", 100},
+		{"if (true || false) { 50 } else { 100 }", 50},
+		{"if (true && false) { 50 } else { 100 }", 100},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		intVal, ok := test.expected.(int)
+		if ok {
+			testInteger(t, ev, int64(intVal))
+		} else {
+			testNull(t, ev)
+		}
+	}
+}
+
+func TestEvalAssignExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"x = 10; x", 10},
+		{"x = 10; x = 15; x", 15},
+		{"x = 10 * 2; x", 20},
+		{"x = 10 * 2; y = x * 3; y", 60},
+		{"x = 10; y = x * 2; z = x + y - 20; z", 10},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testInteger(t, ev, test.expected)
+	}
+}
+
+func TestEvalStringExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`"Hello Earth"`, "Hello Earth"},
+		{`"Hello" + " " + "Earth"`, "Hello Earth"},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		res, ok := ev.(*object.String)
+		if !ok {
+			t.Errorf("obj not String got:%+v", ev)
+			return
+		}
+
+		if res.Value != test.expected {
+			t.Errorf("obj wrong value. got: %s expected: %s", res.Value, test.expected)
+		}
+	}
+}
+
+func TestArray(t *testing.T) {
+	input := "[1, 2, -33, 5+5, 1 + 2 + 3 + 4 * 5]"
+
+	ev := getEvaluated(input)
+	res, ok := ev.(*object.Array)
+	if !ok {
+		t.Errorf("obj not Array got:%+v", ev)
+		return
+	}
+
+	if len(res.Elements) != 5 {
+		t.Errorf("wrong array length got:%d expected 5", len(res.Elements))
+		return
+	}
+
+	testInteger(t, res.Elements[0], 1)
+	testInteger(t, res.Elements[1], 2)
+	testInteger(t, res.Elements[2], -33)
+	testInteger(t, res.Elements[3], 10)
+	testInteger(t, res.Elements[4], 26)
+}
+
+func TestArrayIndexExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{"[1, 2, 5][0]", 1},
+		{"[1, 2, 5][2]", 5},
+		{"[1, 2, 5][3]", nil},
+		{"[1, 2, 5][-1]", nil},
+		{"[1, 2, 5][1+1]", 5},
+		{"x = 1; [1, 2, 5][x]", 2},
+		{"a = [1, 2, 5]; a[0] + a[1] * a[2]", 11},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		intVal, ok := test.expected.(int)
+		if ok {
+			testInteger(t, ev, int64(intVal))
+		} else {
+			testNull(t, ev)
+		}
+	}
+}
+
+func TestHashMap(t *testing.T) {
+	input := `x = "v";
+	{
+		"a": 1,
+		"bb": 10*10,
+		x: 4,
+		"qq"+"ww": 123,
+		true: 1,
+		false: 0
+	}`
+
+	ev := getEvaluated(input)
+	res, ok := ev.(*object.HashMap)
+	if !ok {
+		t.Fatalf("non HashMap returned: %T - %+v", ev, ev)
+	}
+
+	expected := map[object.HashKey]int64{
+		(&object.String{Value: "a"}).HashKey():    1,
+		(&object.String{Value: "bb"}).HashKey():   100,
+		(&object.String{Value: "v"}).HashKey():    4,
+		(&object.String{Value: "qqww"}).HashKey(): 123,
+		TRUE.HashKey():  1,
+		FALSE.HashKey(): 0,
+	}
+
+	if len(res.Pairs) != len(expected) {
+		t.Fatalf("wrong len pairs. got: %d expected:%d", len(res.Pairs), len(expected))
+	}
+
+	for ek, ev := range expected {
+		p, ok := res.Pairs[ek]
+		if !ok {
+			t.Errorf("not found pair for Key")
+		}
+
+		testInteger(t, p.Value, ev)
+	}
+}
+
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{`len("abc")`, 3},
+		{`len("abc" + "efg")`, 6},
+		{`len("")`, 0},
+		{`len(1)`, "type of argument not supported: INTEGER"},
+		{`len("a", "b")`, "wrong number of arguments: 2 want: 1"},
+		{`x = "abc"; len(x)`, 3},
+		{`len([])`, 0},
+		{`len([1, 2])`, 2},
+		{`x = [1, 2, 3]; len(x)`, 3},
+		{`push([], 4)`, []int{4}},
+		{`push([1, 2, 3], 4)`, []int{1, 2, 3, 4}},
+		{`push("a", 4)`, "first argument must be ARRAY, got: STRING"},
+		{`first([])`, nil},
+		{`first([1])`, 1},
+		{`first([3, 2, 1])`, 3},
+		{`first("a")`, "argument must be ARRAY, got: STRING"},
+		{`last([])`, nil},
+		{`last([1])`, 1},
+		{`last([3, 2, 1])`, 1},
+		{`last("a")`, "argument must be ARRAY, got: STRING"},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		switch ex := test.expected.(type) {
+		case int:
+			testInteger(t, ev, int64(ex))
+		case nil:
+			testNull(t, ev)
+		case string:
+			res, ok := ev.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error: %T - %+v", ev, ev)
+				continue
+			}
+
+			if res.Message != ex {
+				t.Errorf("wrong error message: %s expected: %s", res.Message, ex)
+			}
+		case []int:
+			res, ok := ev.(*object.Array)
+			if !ok {
+				t.Errorf("object is not Array: %T - %+v", ev, ev)
+				continue
+			}
+
+			if len(res.Elements) != len(ex) {
+				t.Errorf("wrong number of elements: %d expected: %d", len(res.Elements), len(ex))
+				continue
+			}
+
+			for i, el := range ex {
+				testInteger(t, res.Elements[i], int64(el))
+			}
+		}
+	}
+}

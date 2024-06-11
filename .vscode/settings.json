@@ -77,10 +77,12 @@
     "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/note/output",
     "cSpell.language": "en,ru",
     "cSpell.words": [
+        "лексер",
         "парсер",
         "парсере",
         "Пратт",
         "Пратта",
+        "РБНФ",
         "токеном"
     ],
 }

@@ -1,0 +1,75 @@
+// Фрагменты листинга кода семантического анализатора
+
+func newError(formating string, parameters ...any) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(formating, parameters...)}
+}
+
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR_OBJ
+	}
+	return false
+}
+
+func evalPrefixExpression(op string, right object.Object) object.Object {
+	switch op {
+	case "!":
+		return evalExclOpExpr(right)
+	case "-":
+		return evalMinusPrefixOpExpr(right)
+	default:
+		return newError("unknown operator: %s", op)
+	}
+}
+
+
+func evalInfixExpression(op string, left object.Object, right object.Object) object.Object {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+		return evalIntInfixExpr(op, left, right)
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return evalStringInfixExpr(op, left, right)
+	case op == "==":
+		return boolToBooleanObj(left == right)
+	case op == "!=":
+		return boolToBooleanObj(left != right)
+	case op == "||":
+		return boolToBooleanObj(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
+	case op == "&&":
+		return boolToBooleanObj(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s", left.Type(), op, right.Type())
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+	}
+}
+
+func evalIfExpression(node *ast.IfExpression, env *object.Env) object.Object {
+	condition := Eval(node.Condition, env)
+	if isError(condition) {
+		return condition
+	}
+
+	if condition != TRUE && condition != FALSE {
+		return newError("non boolean condition in if statement")
+	}
+
+	if condition == TRUE {
+		return Eval(node.Consequence, env)
+	} else if node.Alternative != nil {
+		return Eval(node.Alternative, env)
+	} else {
+		return NULL
+	}
+}
+
+func evalIndexExpression(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return evalArrayIndexExp(left, index)
+	case left.Type() == object.HASH_MAP_OBJ:
+		return evalHashMapIndexExp(left, index)
+	default:
+		return newError("index operator not supported: %s", left.Type())
+	}
+}
