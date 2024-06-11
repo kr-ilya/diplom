@@ -1,0 +1,257 @@
+
+\makeatletter
+
+% Определение команды с ключами и значениями
+\define@key{titletable}{creator}[]{\def\tt@creator{#1}}
+\define@key{titletable}{inspector}[]{\def\tt@inspector{#1}}
+\define@key{titletable}{norminspector}[]{\def\tt@norminspector{#1}}
+\define@key{titletable}{approver}[]{\def\tt@approver{#1}}
+\define@key{titletable}{page}[]{\def\tt@page{#1}}
+\define@key{titletable}{total}[]{\def\tt@total{#1}}
+\define@key{titletable}{departmentandgroup}[]{\def\tt@departmentandgroup{#1}}
+\define@key{titletable}{tpga}[]{\def\tt@tpga{#1}}
+\define@key{titletable}{name}[]{\def\tt@name{#1}}
+
+
+
+% Таблица рамки заглавной страницы
+\newcommand{\titletable}[1][]{
+	\setkeys{titletable}{
+		creator,
+		inspector,
+		norminspector,
+		approver,
+		page,
+		total,
+		departmentandgroup,
+		tpga,
+		name,
+	}
+	\setkeys{titletable}{#1}
+	\itshape
+	\small
+	\begin{tikzpicture}[remember picture, overlay]
+
+		\draw[black, ultra thick]
+		([shift={(-5mm, 60mm)}] current page.south east)
+		--
+		+(-185mm, 0)
+		++(0, -15mm)
+		--
+		+(-120mm, 0)
+		++(0, -5mm)
+		--
+		+(-50mm, 0)
+		++(0, -15mm)
+		--
+		+(-50mm, 0)
+		++(0, -5mm)
+		--
+		++(-120mm, 0)
+		++(0, 15mm)
+		--
+		+(-65mm, 0)
+		++(0, 5mm)
+		--
+		++(-65mm, 0)
+		++(0, 20mm)
+		--
+		+(0, -55mm)
+		++(7mm, 0)
+		--
+		+(0, -25mm)
+		++(10mm, 0)
+		--
+		+(0, -55mm)
+		++(23mm, 0)
+		--
+		+(0, -55mm)
+		++(15mm, 0)
+		--
+		+(0, -55mm)
+		++(10mm, 0)
+		--
+		+(0, -55mm)
+
+		++(70mm, -15mm)
+		--
+		+(0, -40mm)
+		++(15mm, 0)
+		--
+		+(0, -20mm)
+		+(5mm, -20mm)
+		--
+		+(5mm, -25mm)
+		++(17mm, 0)
+		--
+		+(0, -20mm)
+		;
+
+
+		\draw[black, thick]
+		([shift={(-190mm, 55mm)}] current page.south east)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		+(65mm, 0)
+		++(0, -15mm)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		+(65mm, 0)
+		++(0, -5mm)
+		--
+		++(65mm, 0)
+
+		++(75mm, 15mm)
+		--
+		+(0, 15mm)
+		++(5mm, 0)
+		--
+		+(0, 15mm)
+		++(5mm, 0)
+		--
+		+(0, 15mm)
+
+
+		;
+
+		\draw[anchor=mid]
+		([shift={(-190mm, 40mm)}] current page.south east)
+		++(0, -2.7mm)
+		+(3.5mm, 0)
+		node {Изм.}
+
+		+(12mm, 0)
+		node {Лист}
+
+		+(28.5mm, 0)
+		node {№ докум.}
+
+		+(47.5mm, 0)
+		node {Подп.}
+
+		+(60mm, 0)
+		node {Дата}
+
+		+(8.5mm, -5mm)
+		node [
+				text width = 15mm,
+				align = left
+			] {Разраб.}
+
+		+(8.5mm, -10mm)
+		node [
+				text width = 15mm,
+				align = left
+			]{Пров.}
+
+		+(8.5mm, -15mm)
+		node [
+				text width = 15mm,
+				align = left
+			] {Т. контр.}
+
+		+(8.5mm, -25mm)
+		node [
+				text width = 15mm,
+				align = left
+			] {Н. контр.}
+
+		+(8.5mm, -30mm)
+		node [
+				text width = 15mm,
+				align = left
+			] {Утв.}
+
+		++(28.5mm, -5mm)
+		+(0, 0mm)
+		node [
+				text width = 21mm,
+				align = left
+			] {\tt@creator}
+
+		+(0, -5mm)
+		node [
+				text width = 21mm,
+				align = left
+			] {\tt@inspector}
+
+		+(0, -20mm)
+		node [
+				text width = 21mm,
+				align = left
+			] {\tt@norminspector}
+
+		+(0, -25mm)
+		node [
+				text width = 21mm,
+				align = left
+			] {\tt@approver}
+
+
+
+		([shift={(-5mm, 25mm)}] current page.south east)
+		++(0, -2.7mm)
+		+(-15mm, 0)
+		node {Листов~\tt@total}
+
+		+(-40mm, 0)
+		node {Лист~\tt@page}
+
+		++(0, 20mm)
+		+(-9mm, 0)
+		node {Масштаб}
+		+(-26.5mm, 0)
+		node {Масса}
+		+(-42.5mm, 0)
+		node {Лит.}
+		;
+
+
+		%\upshape
+		\huge
+		\draw
+		([shift={(-5mm, 45mm)}] current page.south east)
+		+(-60mm, 7.5mm)
+		node {\tt@tpga}
+		;
+
+		\large
+		\draw
+		([shift={(-5mm, 5mm)}] current page.south east)
+		+(-25mm, 7.5mm)
+		node [
+				anchor = center,
+				text width = 50mm,
+				align = center
+			]{\tt@departmentandgroup}
+		;
+
+		\large
+		\draw
+		([shift={(-55mm, 20mm)}] current page.south east)
+		+(-35mm, 12.5mm)
+		node [
+				anchor = center,
+				text width = 70mm,
+				align = center
+			]{\tt@name}
+		;
+
+	\end{tikzpicture}
+}
+\makeatother
+
+

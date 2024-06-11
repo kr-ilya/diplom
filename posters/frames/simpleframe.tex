@@ -1,0 +1,17 @@
+
+\newcommand{\simpleframe}{
+	\begin{tikzpicture}[remember picture, overlay]
+
+		\draw[black, ultra thick]
+
+		([shift={(20mm, 5mm)}] current page.south west)
+		--
+		([shift={(20mm, -5mm)}] current page.north west)
+		--
+		([shift={(-5mm, -5mm)}] current page.north east)
+		--
+		([shift={(-5mm, 5mm)}] current page.south east)
+		-- cycle;
+
+	\end{tikzpicture}
+}
