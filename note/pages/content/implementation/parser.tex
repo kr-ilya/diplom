@@ -38,11 +38,10 @@ type Expression interface {
 
 Пример кода структуры AssignStatement, реализующей интерфейс Statement на рисунке~\ref{f:code_IStatementExample}.
 
-Пример кода структуры IntegerLineral, реализующей интерфейс Expression представлен на рисунке~\ref{f:code_IExpressionExample}.
+\clearpage
 
 \begin{figure}[!htb]
 	\centering
-	\vspace{\toppaddingoffigure}
 	\begin{lstlisting}[
         language=Go,
         xleftmargin=.08\textwidth,
@@ -73,6 +72,8 @@ func (as *AssignStatement) ToString() string {
 	\caption{Пример реализации интерфейса Statement}
 	\label{f:code_IStatementExample}
 \end{figure}
+
+Пример кода структуры IntegerLineral, реализующей интерфейс Expression представлен на рисунке~\ref{f:code_IExpressionExample}.
 
 \begin{figure}[!htb]
 	\centering

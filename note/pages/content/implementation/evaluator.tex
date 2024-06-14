@@ -283,9 +283,8 @@ func evalIntInfixExpr(op string, left object.Object, right object.Object) object
 	\label{f:evalSuccessExample}
 \end{figure}
 
-Пример завершения работы программы с семантической ошибкой для указанных ниже входных данных показан на рисунке~\ref{f:evalErrorExample}.
-
-Входная строка представлена на рисунке~\ref{f:code_evalErrorExample}.
+Рассмотрим пример завершения программы с семантической ошибкой. Исходный код с такой ошибкой представлен на рисунке~\ref{f:code_evalErrorExample}.
+Результат выполнения показан на рисунке~\ref{f:evalErrorExample}.
 
 \begin{figure}[!htb]
 	\centering
@@ -307,7 +306,7 @@ if (x > true) {
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=0.8\textwidth]{evaluator/evalErrorExample.png}
-	\caption{Пример завершения работы программы с ошибкой}
+	\caption{Завершение работы программы с семантической ошибкой}
 	\label{f:evalErrorExample}
 \end{figure}
 
