@@ -48,7 +48,7 @@
         \label{t:testCases_infixIntExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные} & Ожидаемый результат \\
             \hline
             4                             & 4                   \\
             \hline
@@ -85,7 +85,7 @@
         \label{t:testCases_builtins}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные            & Ожидаемый результат                        \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}            & Ожидаемый результат                        \\
             \hline
             len("abc")                & 3                                          \\
             \hline
@@ -136,7 +136,7 @@
         \label{t:testCases_semanticErrors}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                   & Ожидаемый результат                   \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}                   & Ожидаемый результат                   \\
             \hline
             true + false                     & unknown operator: BOOLEAN + BOOLEAN   \\
             \hline
@@ -175,7 +175,7 @@
         \label{t:testCases_fnCall}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                                              & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные} & Ожидаемый результат \\
             \hline
             x = fn(x)\{ x \}; x(10);                                    & 10                  \\
             \hline
@@ -207,7 +207,7 @@
         \label{t:testCases_arrayExprt}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные          & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}          & Ожидаемый результат \\
             \hline
             {[}1, 2, -33, 5+5, 1 + 2 + 3 + 4 * 5{]}          & {[}1, 2, -33, 10, 26{]}         \\
             \hline
@@ -226,7 +226,7 @@
         \label{t:testCases_stringExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные          & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}          & Ожидаемый результат \\
             \hline
             "Hello Earth"           & Hello Earth         \\
             \hline
@@ -245,7 +245,7 @@
         \label{t:testCases_boolExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные              & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}              & Ожидаемый результат \\
             \hline
             true                        & true                \\
             \hline
@@ -312,7 +312,7 @@
         \label{t:testCases_conditionExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                                 & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}                                 & Ожидаемый результат \\
             \hline
             if (true) \{ 50 \}                             & 50                  \\
             \hline
@@ -341,7 +341,7 @@
         \label{t:testCases_arrayIndexExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                                    & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}                                   & Ожидаемый результат \\
             \hline
             {[}1, 2, 5{]}{[}0{]}                              & 1                   \\
             \hline
@@ -370,7 +370,7 @@
         \label{t:testCases_HashMapIndexExpr}
         \begin{tabularx}{\textwidth}{|X|c|}
             \hline
-            Входные данные                                    & Ожидаемый результат \\
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные}                                    & Ожидаемый результат \\
             \hline
             \{"x": 1\}{[}"x"{]}   & 1    \\
             \hline
