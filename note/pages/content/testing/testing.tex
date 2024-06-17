@@ -40,8 +40,6 @@
     \label{f:testResult}
 \end{figure}
 
-\clearpage
-
 \begin{table}[!ht]
     \Large
     \centering
@@ -78,6 +76,8 @@
     \end{threeparttable}
     \vspace{\bottompaddingoftable}
 \end{table}
+
+\clearpage
 
 \begin{table}[!ht]
     \Large
@@ -123,12 +123,47 @@
             \hline
             last({[}1{]})                                                    & 1                                          \\
             \hline
+            intToString("a")  & argument must be INTEGER, got: STRING \\
+            \hline
+            intToString(123)  & 123                                   \\
+            \hline
+            intToString(1, 2) & wrong number of arguments: 2 want: 1  \\
+            \hline
         \end{tabularx}
     \end{threeparttable}
     \vspace{\bottompaddingoftable}
 \end{table}
 
-\clearpage
+\begin{table}[!ht]
+    \Large
+    \centering
+    \begin{threeparttable}
+        \caption{Тест-кейсы исполнения условного выражения}
+        \label{t:testCases_conditionExpr}
+        \begin{tabularx}{\textwidth}{|X|c|}
+            \hline
+            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные} & Ожидаемый результат \\
+            \hline
+            if (true) \{ 50 \}                                               & 50                  \\
+            \hline
+            if (false) \{ 50 \}                                              & null                \\
+            \hline
+            if (!false) \{ 50 \}                                             & 50                  \\
+            \hline
+            if (1 \textless 2) \{ 50 \} else \{ 100 \}                       & 50                  \\
+            \hline
+            if (1 \textgreater 2) \{ 50 \} else \{ 100 \}                    & 100                 \\
+            \hline
+            if (true || false) \{ 50 \} else \{ 100 \}                       & 50                  \\
+            \hline
+            if (true   \&\& false) \{ 50 \} else \{ 100 \}                   & 100                 \\
+            \hline
+        \end{tabularx}
+    \end{threeparttable}
+    \vspace{\bottompaddingoftable}
+\end{table}
+
+% \clearpage
 
 \begin{table}[!ht]
     \Large
@@ -305,35 +340,6 @@
 \end{table}
 
 \clearpage
-
-\begin{table}[!ht]
-    \Large
-    \centering
-    \begin{threeparttable}
-        \caption{Тест-кейсы исполнения условного выражения}
-        \label{t:testCases_conditionExpr}
-        \begin{tabularx}{\textwidth}{|X|c|}
-            \hline
-            \multicolumn{1}{|>{\centering\arraybackslash}X|}{Входные данные} & Ожидаемый результат \\
-            \hline
-            if (true) \{ 50 \}                                               & 50                  \\
-            \hline
-            if (false) \{ 50 \}                                              & null                \\
-            \hline
-            if (!false) \{ 50 \}                                             & 50                  \\
-            \hline
-            if (1 \textless 2) \{ 50 \} else \{ 100 \}                       & 50                  \\
-            \hline
-            if (1 \textgreater 2) \{ 50 \} else \{ 100 \}                    & 100                 \\
-            \hline
-            if (true || false) \{ 50 \} else \{ 100 \}                       & 50                  \\
-            \hline
-            if (true   \&\& false) \{ 50 \} else \{ 100 \}                   & 100                 \\
-            \hline
-        \end{tabularx}
-    \end{threeparttable}
-    \vspace{\bottompaddingoftable}
-\end{table}
 
 \begin{table}[!ht]
     \Large
